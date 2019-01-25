@@ -3,7 +3,6 @@ let config = require('./botconfig.json');
 const bot = new Discord.Client();
 const fs = require("fs");
 bot.commands = new Discord.Collection();
-const YTDL = require('ytdl-core');
 
 fs.readdir("./commands/", (err, files) => {
 
@@ -56,74 +55,5 @@ function play(connection, message) {
     });
 
 }
-var servers = {};
-var prefix = 'V';
-bot.on("message", async message => {
-    var args = message.content.substring(prefix.length).split(" ");
-    if (!message.content.startsWith(prefix)) return;
-    switch (args[0].toLowerCase()) {
-        case "mplay":
-            if (!message.guild.member(bot.user).hasPermission('SPEAK')) return message.channel.send('**Sorry, but i cant join/speak in this channel!**').catch(console.error);
-
-            if (!message.member.voiceChannel) {
-                message.channel.send("**I think it may work better if you are in a voice channel!**");
-                return;
-            }
-
-            if (!servers[message.guild.id]) servers[message.guild.id] = {
-                queue: []
-            };
-
-            var server = servers[message.guild.id];
-
-            server.queue.push(args[1]);
-
-            message.channel.sendMessage('``You song has been added to the queue.``')
-            if (!message.guild.voiceConnection) message.member.voiceChannel.join().then(function(connection) {
-                play(connection, message);
-            });
-            break;
-        case "mstop":
-            var server = servers[message.guild.id];
-            if (!message.member.voiceChannel) {
-                message.channel.send("**I think it may work better if you are in a voice channel!**");
-                return;
-            }
-
-            if (message.guild.voiceConnection) message.guild.voiceConnection.disconnect();
-            message.channel.send('``The queue of songs removed.``');
-            break;
-        case "mskip":
-            if (!message.member.voiceChannel) {
-                message.channel.send("**I think it may work better if you are in a voice channel!**");
-                return;
-            }
-
-            var server = servers[message.guild.id];
-            if (server.dispatcher) server.dispatcher.end();
-            message.channel.send('``The song has been sucessfully skipped.``');
-            break;
-        case "mpause":
-            if (!message.member.voiceChannel) {
-                message.channel.send("**I think it may work better if you are in a voice channel!**");
-                return;
-            }
-
-            var server = servers[message.guild.id];
-            if (server.dispatcher) server.dispatcher.pause();
-            message.channel.send('``The song is paused.``');
-            break;
-        case "mresume":
-            if (!message.member.voiceChannel) {
-                message.channel.send("**I think it may work better if you are in a voice channel!**");
-                return;
-            }
-
-            var server = servers[message.guild.id];
-            if (server.dispatcher) server.dispatcher.resume();
-            message.channel.send('``The song is sucessfully continued.``');
-            break;
-    }
-});
 
 bot.login(process.env.bot_token)
